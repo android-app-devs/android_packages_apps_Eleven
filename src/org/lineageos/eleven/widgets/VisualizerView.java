@@ -28,11 +28,11 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
-import androidx.core.content.ContextCompat;
 
 import org.lineageos.eleven.R;
 
 public class VisualizerView extends View {
+    public static final int FALLBACK_VISUALIZER_COLOR = 0xFF2196F3;
     private static final String TAG = VisualizerView.class.getSimpleName();
 
     private static final int DEFAULT_ALPHA = 140;
@@ -214,7 +214,12 @@ public class VisualizerView extends View {
     }
 
     public void initialize(Context context) {
-        mColor = ContextCompat.getColor(context, android.R.color.white);
+        android.util.TypedValue typedValue = new android.util.TypedValue();
+        int fallbackColor = FALLBACK_VISUALIZER_COLOR;
+        if (context.getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true)) {
+            fallbackColor = typedValue.data;
+        }
+        mColor = Color.argb(DEFAULT_ALPHA, Color.red(fallbackColor), Color.green(fallbackColor), Color.blue(fallbackColor));
 
         mPaint = new Paint();
         mPaint.setAntiAlias(true);

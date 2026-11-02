@@ -20,6 +20,8 @@
 
     <!-- Main Material -->
     <style name="Eleven.Theme" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">?colorPrimary</item>
+        <item name="android:windowLightStatusBar">?isLightTheme</item>
         <item name="android:navigationBarColor">?colorSurfaceContainer</item>
         <item name="android:windowLightNavigationBar">?isLightTheme</item>
         <item name="android:windowContentOverlay">@null</item>

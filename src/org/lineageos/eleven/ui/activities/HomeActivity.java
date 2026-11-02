@@ -72,9 +72,8 @@ import org.lineageos.eleven.utils.AnimatorEndListener;
 import org.lineageos.eleven.utils.ElevenUtils;
 import org.lineageos.eleven.utils.MusicUtils;
 import org.lineageos.eleven.utils.colors.BitmapWithColors;
+import org.lineageos.eleven.widgets.VisualizerView;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class HomeActivity extends SlidingPanelActivity implements
         FragmentManager.OnBackStackChangedListener {
@@ -101,6 +100,7 @@ public class HomeActivity extends SlidingPanelActivity implements
     private boolean mHasPendingPlaybackRequest = false;
     private final Handler mHandler = new Handler();
     private boolean mBrowsePanelActive = true;
+    private static int sVisualizerColor = VisualizerView.FALLBACK_VISUALIZER_COLOR;
 
     private View mRootView;
 
@@ -196,6 +196,8 @@ public class HomeActivity extends SlidingPanelActivity implements
 
         getSupportFragmentManager().addOnBackStackChangedListener(this);
 
+        updateStatusBarColor();
+
         // if we are resuming from a saved instance state
         if (savedInstanceState != null) {
             // track which fragments are loaded and if this is the top level activity
@@ -280,8 +282,27 @@ public class HomeActivity extends SlidingPanelActivity implements
     }
 
     @Override
+    public void checkTargetNavigation() {
+        super.checkTargetNavigation();
+
+        AudioPlayerFragment fragment = getAudioPlayerFragment();
+        if (fragment != null) {
+            fragment.setVisualizerColor(sVisualizerColor);
+        }
+        updateStatusBarColor();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+
+        if (!isFinishing() && !isDestroyed()) {
+            AudioPlayerFragment fragment = getAudioPlayerFragment();
+            if (fragment != null) {
+                fragment.setVisualizerColor(sVisualizerColor);
+            }
+            updateStatusBarColor();
+        }
 
         if (mAllFilesAccessPending) {
             return;
@@ -310,17 +331,32 @@ public class HomeActivity extends SlidingPanelActivity implements
         if (mBrowsePanelActive || MusicUtils.getCurrentAlbumId() < 0) {
             updateStatusBarColor(Color.TRANSPARENT);
         } else {
-            Executor executor = Executors.newSingleThreadExecutor();
-            Handler handler = new Handler(Looper.getMainLooper());
+            java.util.concurrent.Executor executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+            android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
 
             executor.execute(() -> {
-                ImageFetcher imageFetcher = ImageFetcher.getInstance(HomeActivity.this);
-                BitmapWithColors bmc = imageFetcher.getArtwork(
-                        MusicUtils.getAlbumName(), MusicUtils.getCurrentAlbumId(), true);
+                org.lineageos.eleven.cache.ImageFetcher imageFetcher =
+                        org.lineageos.eleven.cache.ImageFetcher.getInstance(HomeActivity.this);
+                org.lineageos.eleven.utils.colors.BitmapWithColors bmc = imageFetcher.getArtwork(
+                        org.lineageos.eleven.utils.MusicUtils.getAlbumName(),
+                        org.lineageos.eleven.utils.MusicUtils.getCurrentAlbumId(), true);
 
                 handler.post(() -> {
-                    updateVisualizerColor(bmc != null
-                            ? bmc.getContrastingColor() : Color.TRANSPARENT);
+                    int color = android.graphics.Color.TRANSPARENT;
+                    if (bmc != null) {
+                        color = bmc.getContrastingColor();
+                    }
+                    if (color == android.graphics.Color.TRANSPARENT) {
+                        android.util.TypedValue fallback = new android.util.TypedValue();
+                        if (getTheme().resolveAttribute(R.attr.colorPrimary, fallback, true)) {
+                            color = fallback.data;
+                        } else {
+                            color = VisualizerView.FALLBACK_VISUALIZER_COLOR;
+                        }
+                    }
+                    sVisualizerColor = color;
+                    updateVisualizerColor(color);
+                    updateStatusBarColor(android.graphics.Color.TRANSPARENT);
                 });
             });
         }
@@ -328,10 +364,16 @@ public class HomeActivity extends SlidingPanelActivity implements
 
     private void updateVisualizerColor(int color) {
         if (color == Color.TRANSPARENT) {
-            color = ContextCompat.getColor(this, android.R.color.white);
+            android.util.TypedValue fallback = new android.util.TypedValue();
+            if (getTheme().resolveAttribute(R.attr.colorPrimary, fallback, true)) {
+                color = fallback.data;
+            } else {
+                color = VisualizerView.FALLBACK_VISUALIZER_COLOR;
+            }
         }
 
-        // check for null since updatestatusBarColor is a async task
+        sVisualizerColor = color;
+
         AudioPlayerFragment fragment = getAudioPlayerFragment();
         if (fragment != null) {
             fragment.setVisualizerColor(color);
