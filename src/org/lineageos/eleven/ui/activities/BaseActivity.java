@@ -360,7 +360,7 @@ public abstract class BaseActivity extends AppCompatActivity implements ServiceC
             NavUtils.openAlbumProfile(BaseActivity.this, MusicUtils.getAlbumName(),
                     MusicUtils.getArtistName(), MusicUtils.getCurrentAlbumId());
         } else {
-            MusicUtils.shuffleAll(BaseActivity.this);
+            MusicUtils.playAllSongs(BaseActivity.this);
         }
     };
 

@@ -45,6 +45,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.fragment.app.FragmentActivity;
 
@@ -153,7 +154,7 @@ public final class MusicUtils {
          *
          * @param callback The {@link ServiceConnection} to use
          */
-        public ServiceBinder(final ServiceConnection callback) {
+        public ServiceBinder(@Nullable final ServiceConnection callback) {
             mCallback = callback;
         }
 
@@ -855,6 +856,17 @@ public final class MusicUtils {
         } catch (final RemoteException exc) {
             Log.e(TAG, "shuffleAll()", exc);
         }
+    }
+
+    public static void playAllSongs(final Context context) {
+        long[] trackList;
+        try (Cursor cursor = SongLoader.makeSongCursor(context, null)) {
+            trackList = getSongListForCursor(cursor);
+        }
+        if (trackList.length == 0) {
+            return;
+        }
+        playAll(trackList, 0, -1, IdType.NA, false);
     }
 
     /**

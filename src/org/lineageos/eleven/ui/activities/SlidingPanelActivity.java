@@ -72,7 +72,7 @@ public abstract class SlidingPanelActivity extends BaseActivity {
         if (MusicUtils.getCurrentAudioId() != -1) {
             openAudioPlayer();
         } else {
-            MusicUtils.shuffleAll(SlidingPanelActivity.this);
+            MusicUtils.playAllSongs(SlidingPanelActivity.this);
         }
     };
 
