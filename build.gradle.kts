@@ -73,10 +73,6 @@ android {
                 )
             )
 
-            // Sign the release build with a temporary keystore so the APK is
-            // installable. The final artifact is re-signed with the platform
-            // release keys via apksigner after the build.
-            signingConfig = signingConfigs.getByName("release")
         }
     }
 
